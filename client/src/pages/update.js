@@ -2,6 +2,7 @@ import {React, useState} from 'react';
 
 const Update = () => {
     const [selectedFile, setSelectedFile] = useState("");
+    const [uploading, setUploading] = useState(false);
 
     const handleFileChange = (event) => {
         setSelectedFile(event.target.files[0]);
@@ -9,6 +10,8 @@ const Update = () => {
 
 
     const handleSubmit = async () => {
+        console.log('uploading file . . . ')
+        setUploading(true);
 
 
         // var MAX_FILE_SIZE = 200*1024;
@@ -40,6 +43,8 @@ const Update = () => {
         } catch (error) {
             console.error(error);
         }
+        console.log('Done uploading');
+        setUploading(false);
     };
 
     return(
@@ -48,9 +53,9 @@ const Update = () => {
                 <h1 className='pageTitle'>Update EVSE</h1>
                 <div className='uploadRegion'>
                     <h2>Select a .avb or .bin file to upload</h2>
-                    <input type="file" accept=".avb, .bin" onChange={handleFileChange}/>
+                    <input type="file" accept=".avb, .bin, .txt" onChange={handleFileChange}/>
                 </div>
-                <button onClick={handleSubmit}>Upload</button>
+                <button onClick={handleSubmit} >Upload</button>
             </div>
 
         </main>
