@@ -57,8 +57,9 @@ CRC16_TABLE=[0x0000,0xc0c1,0xc181,0x0140,0xc301,0x03c0,0x0280,0xc241,
              0x4400,0x84c1,0x8581,0x4540,0x8701,0x47c0,0x4680,0x8641,
              0x8201,0x42c0,0x4380,0x8341,0x4100,0x81c1,0x8081,0x4040]
 
+
 # AVPacket class based off of PilotTerm AVPacket.cs class
-# this class creates WSLIP message objects
+# this class creates WSLIP messages, stored in instance member var byteArray
 class AVPacket:
 
   # from PilotTerm: AVPacket.cs.26
@@ -146,10 +147,9 @@ def addHeaderInfo(byteArray, address, numOfBytes):
   byteArray.extend(convert_to_bytes(WRITE_COMMAND))
   byteArray.extend(convert_to_bytes(address, 4))
   byteArray.extend(convert_to_bytes(numOfBytes))
-    
 
 all_packets = [] # storing all prepared packets into this for now
-filename = sys.argv[1]
+filename = sys.argv[1] # getting name of file that was passed in
 # opening file, reading in binary, storing contents into bytearray named payload
 with open(filename, 'rb', buffering=256) as file:
   currAddress = START_ADDRESS
@@ -168,6 +168,13 @@ with open(filename, 'rb', buffering=256) as file:
 
     # package payload into WSLIP message
     packet = AVPacket(SOURCE_ID, DESTINATION_ID, counter, FLASH_WRITE_REQUEST, payload)
+    
+    # ESP32 Server can only receive packets of length 576 characters or less.
+    # Can try changing ESP32 build configuration to accommodate larger HTTP request lengths I guess since that's what we already have to do.
+    # IDK this is a headache we didn't anticipate tbh. Hopefully all packets are less than 576 characters.
+    if(len(packet.byteArray.hex()) > 576):
+      raise Exception(f'Packet size too large to be sent over WiFi to ESP32. \nPacket contents:\n{packet.byteArray.hex()}')
+
     counter += 1
 
     # adding packet to all_packets
@@ -177,10 +184,14 @@ with open(filename, 'rb', buffering=256) as file:
     currAddress += numBytes
 
 # this is for sending packets as byte arrays
+# packets = []
 # serialized_data = [list(arr) for arr in all_packets]
 # for i in range(len(all_packets)):
-#     packet_data = {i: serialized_data[i]}
-#     print(json.dumps(packet_data))
+#   packet_data = {i: serialized_data[i]}
+#   packets.append(json.dumps(packet_data))
+
+# for packet in packets:
+#   print(packet)
 
 # this is for sending packets as hex
 packets = []

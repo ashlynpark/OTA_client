@@ -1,6 +1,5 @@
 const root = 'http://192.168.10.113';
 
-
 const express = require("express");
 const morgan = require("morgan");
 const axios = require('axios');
@@ -79,15 +78,17 @@ app.get('/info/:command', (req, res) => {
 
 
 // Set up storage configuration for uploaded files
+
+let currFileName = '';
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, 'uploads/'); // Uploads will be stored in the 'uploads' folder
     },
     filename: (req, file, cb) => {
       cb(null, 'uploaded-file' + path.extname(file.originalname));
+      currFileName = 'uploaded-file' + path.extname(file.originalname);
     },
   });
-
 
 
 const upload = multer({ storage });
@@ -97,11 +98,11 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No file provided' });
     }
-    let count = 0;
+
+    // parsing file using python script
     let all_packets = [];
-    let dat = '';
     let receivedData = '';
-    const pythonProcess = spawn('python3', ['./fileparserAVB.py', './uploads/uploaded-file.avb']);
+    const pythonProcess = spawn('python3', ['./fileparserAVB.py', './uploads/'+currFileName]);
     pythonProcess.stdout.on('data', (data) => {
       receivedData += data.toString();
       const lines = receivedData.split('\n');
@@ -115,7 +116,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
               return null;
           }
       });
-      console.log('Received packets:', packets);
       all_packets = all_packets.concat(packets);
     });
 
@@ -123,38 +123,70 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         console.error(`Error executing Python script: ${data}`);
     });
 
-    pythonProcess.on('close', (code) => {
+    // await Promise.all([
+    //     new Promise(resolve => pythonProcess.on('close', resolve)),
+    //     axios.post(root + '/post', np, { headers }),
+    //     ...all_packets.map(async packet => await axios.post(root + '/post', packet.toString()))
+    // ]);
+    pythonProcess.on('close', async(code) => {
         if (code === 0) {
             console.log('Python script executed successfully');
-            console.log(all_packets);
-            console.log(`Number of packets received: ${all_packets.length}`)
+            console.log(`Number of packets parsed from Python script: ${all_packets.length}`)
             // packets = lines.map(line => JSON.parse(line));
             // console.log(packets.toString());
             // Rest of your code for sending ESP32 commands and other tasks
+            try {
+                const headers = {
+                    'Content-Type': 'text/plain'
+                };
+                const np = "numPackets="+all_packets.length.toString();
+                console.log(np);
+                // Send the 'numPackets' post request
+                await axios.post(root + '/post', np, { headers });
 
-            const fileInfo = {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
-            };
-            res.status(200).json({ message: 'File uploaded successfully', fileInfo });
+                // Send individual packets in a loop
+                for (let i = 0; i < all_packets.length; i++) {
+                    // console.log(all_packets[i][i.toString()]);
+                    let s = all_packets[i][i.toString()];
+                    if(i == all_packets.length - 1) console.log(all_packets[i]);
+                    await axios.post(root + '/post', s);
+                }
+                // Continue with the rest of your code
+                console.log('All packets sent successfully');
+                // Rest of your code for sending ESP32 commands and other tasks
+            } catch (error) {
+                console.error('An error occurred:', error);
+                res.status(500).json({ error: 'An error occurred while sending packets' });
+            }
+
         } else {
             console.error(`Python script exited with code ${code}`);
             res.status(500).json({ error: 'Error executing Python script' });
         }
     });
 
+    // // start sending all packets
+    // console.log(np);
+    // axios.post(root + '/post', np, { headers }
+    // ).then(async (response)=> {
+    //     console.log(response);
+    //     for(let i = 0; i < all_packets.length; i++){
+    //         // const requestBody = {
+    //         //     [i.toString()]: all_packets[i] // Use dynamic key-value pair
+    //         // };
+    //         // console.log(requestBody)
+    //         // await axios.post(root + '/post', requestBody);
+    //         await axios.post(root + '/post', all_packets[i].toString());
+    //     }
+    // }).catch(error => {
+    //     console.error(error);
+    //     res.status(500).json({ error: 'An error from the ESP32 server occurred' });
+    // })
+
+    res.status(200).json({ message: 'File uploaded successfully'});
     // 2. send command to esp32 to start the EVSE update process
     //          the esp should wait to receive some packets first before sending reboot 
     //          command to LPC
     // 3. start sending the packets over
   
-});
-
-
-app.post('/send-packets', (req, res) => {
-  console.log('HEWOQIHQEWIOTHEWIULTHWEUITHEOWUIRH')
-  console.log(req.body);
-  res.status(202).send('ok')
 });
