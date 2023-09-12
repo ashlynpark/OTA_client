@@ -1,4 +1,4 @@
-const root = 'http://192.168.10.113';
+const root = 'http://192.168.10.138';
 
 const express = require("express");
 const morgan = require("morgan");
@@ -136,20 +136,32 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             // console.log(packets.toString());
             // Rest of your code for sending ESP32 commands and other tasks
             try {
-                const headers = {
-                    'Content-Type': 'text/plain'
+                let headers = {
+                    'Content-Type': 'application/octet-stream',
+                    'Content-Length': 0,
+                    'Array-Length': 0,
                 };
                 const np = "numPackets="+all_packets.length.toString();
                 console.log(np);
                 // Send the 'numPackets' post request
-                await axios.post(root + '/post', np, { headers });
+               // await axios.post(root + '/post', np, { headers });
 
                 // Send individual packets in a loop
                 for (let i = 0; i < all_packets.length; i++) {
                     // console.log(all_packets[i][i.toString()]);
                     let s = all_packets[i][i.toString()];
-                    if(i == all_packets.length - 1) console.log(all_packets[i]);
-                    await axios.post(root + '/post', s);
+                    // if(i == 0){
+                    //     console.log(s);
+                    //     headers["Content-Length"] = s.toString().length;
+                    //     headers["Array-Length"] = s.length;
+                    //     console.log(s.length);
+                    //     await axios.post(root + '/post', s.toString(), {headers});
+                    //     break;
+                    // }
+                    headers["Content-Length"] = s.toString().length;
+                    headers["Array-Length"] = s.length;
+                    console.log(i);
+                    await axios.post(root + '/post', s.toString(), {headers});
                 }
                 // Continue with the rest of your code
                 console.log('All packets sent successfully');

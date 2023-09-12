@@ -184,23 +184,23 @@ with open(filename, 'rb', buffering=256) as file:
     currAddress += numBytes
 
 # this is for sending packets as byte arrays
-# packets = []
-# serialized_data = [list(arr) for arr in all_packets]
-# for i in range(len(all_packets)):
-#   packet_data = {i: serialized_data[i]}
-#   packets.append(json.dumps(packet_data))
+packets = []
+serialized_data = [list(arr) for arr in all_packets]
+for i in range(len(all_packets)):
+  packet_data = {i: serialized_data[i]}
+  packets.append(json.dumps(packet_data))
 
-# for packet in packets:
-#   print(packet)
+for packet in packets:
+  print(packet)
 
 # this is for sending packets as hex
-packets = []
-for i in range(len(all_packets)):
-    packet_data = {i: all_packets[i].hex()} 
-    packets.append(json.dumps(packet_data))
+# packets = []
+# for i in range(len(all_packets)):
+#     packet_data = {i: all_packets[i].hex()} 
+#     packets.append(json.dumps(packet_data))
   
-for packet in packets:
-    print(packet)
+# for packet in packets:
+#     print(packet)
 
 # response = requests.post('http://localhost:4000/send-packets', json=data)
 # if response.status_code == 200:
