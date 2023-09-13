@@ -51,11 +51,12 @@ const Update = () => {
         <main>
             <div style={{'marginLeft': '10%'}}>
                 <h1 className='pageTitle'>Update EVSE</h1>
-                <div className='uploadRegion'>
+                {/* <div className='uploadRegion'>
                     <h2>Select a .avb or .bin file to upload</h2>
                     <input type="file" accept=".avb, .bin, .txt" onChange={handleFileChange}/>
                 </div>
-                <button onClick={handleSubmit} >Upload</button>
+                <button onClick={handleSubmit} >Upload</button> */}
+                <h2> under construction </h2>
             </div>
 
         </main>

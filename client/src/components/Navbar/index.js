@@ -14,7 +14,7 @@ const Navbar = () => {
                     <NavLink to="/">
                         Terminal
                     </NavLink>
-                    <NavLink to="/update">
+                    {/* <NavLink to="/update">
                         Update
                     </NavLink>
                     <NavLink to="/">
@@ -22,7 +22,7 @@ const Navbar = () => {
                     </NavLink>
                     <NavLink to="/">
                         Auto Upload
-                    </NavLink>
+                    </NavLink> */}
                 </NavMenu>
             </Nav>
         </>

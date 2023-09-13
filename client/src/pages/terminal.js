@@ -63,9 +63,9 @@ const Terminal = () => {
         setCommandStr('Sending . . . ');
         try {
             setProcessingRequest(true);
-            const response = await fetch('http://localhost:4000/info/' + cmd);
+            const response = await fetch('http://192.168.4.1/get?Input=' + cmd);
             if (response.ok) {
-            let responseData = await response.text(); 
+            let responseData = await response.data; 
             console.log(responseData);
             allData.push(responseData);
             } else {
