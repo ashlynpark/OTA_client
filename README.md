@@ -2,8 +2,7 @@
 # PilotTerm Online
 Run diagnostic commands over WiFi to EVSE. Please contact Ell Park on Teams if you have any questions.
 
-
-
+Currently, you must be connected to Rogue Three WiFi in order to communicate with EVSE.
 
 ## Installation
 

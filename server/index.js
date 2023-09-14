@@ -1,6 +1,7 @@
-const root = 'http://192.168.10.105';
+// const root = 'http://192.168.10.105';
 // const root = 'http://192.168.10.138';
 
+let root = '';
 
 const express = require("express");
 const morgan = require("morgan");
@@ -12,11 +13,12 @@ const fs = require('fs').promises;
 const util = require('util');
 const { spawn} = require('child_process'); // Import the exec function
 const exec = util.promisify(require('child_process').exec);
-
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(morgan('dev'));
 app.use(cors());
+app.use(bodyParser.json());
 const PORT = process.env.PORT || 4000; //process.env.PORT is going to check your environment variables to see if you already have a PORT defined there if not it will use PORT 4000
 const HOST = 'localhost';
 app.listen(PORT, (error) =>{
@@ -44,7 +46,26 @@ app.get('/hewwo', (req, res, next) => {
  });
 
 
+app.put('/setip', (req, res) => {
+    console.log("SETTING IP");
+    const newIP = req.body.newIP;
+    try{
+        root = 'http://' + req.body.newIP;
+        axios.get(root)
+        .then(response => {
+            res.status(200).send(response.data); // Send the data as the response
+        })
+        .catch(error => {
+            // Handle errors appropriately
+            console.error(error);
+        });        
+    }
+    catch (error){
+        res.status(500).send('IP Could Not Be Set.');
+    }
 
+    res.status(200).send(newIP);
+});
 
 app.get('/info', (req, res) => {
     axios.get(root)
@@ -61,6 +82,7 @@ app.get('/info', (req, res) => {
 app.get('/info/:command', (req, res) => {
     var command = req.params.command;
     console.log(command);
+    console.log(root + '/get?Input=' + command);
     axios.get(root + '/get?Input=' + command)
         .then(response => {
             res.status(200).send(response.data); // Send the data as the response
