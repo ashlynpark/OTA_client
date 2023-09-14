@@ -1,0 +1,3 @@
+let espIP = ''
+
+export {espIP}
