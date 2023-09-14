@@ -65,18 +65,18 @@ const Terminal = () => {
             setProcessingRequest(true);
             const response = await fetch('http://localhost:4000/info/' + cmd);
             if (response.ok) {
-            let responseData = await response.data; 
+            let responseData = await response.text();
             console.log(responseData);
             allData.push(responseData);
             } else {
             console.error('Request failed with status:', response.status);
             }
+
         } catch (error) {
             console.error('An error occurred:', error);
         }
         setProcessingRequest(false);
         setCommandStr('');
-
     }
 
     return(
