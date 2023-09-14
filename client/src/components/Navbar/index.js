@@ -12,7 +12,7 @@ const Navbar = () => {
                 </NavHeader>
                 <NavMenu>
                     <NavLink to="/">
-                        Terminal
+                        PilotTerm Online
                     </NavLink>
                     {/* <NavLink to="/update">
                         Update
